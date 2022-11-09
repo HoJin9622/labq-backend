@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import Rainfall
 
-# Register your models here.
+
+@admin.register(Rainfall)
+class RainfallAdmin(admin.ModelAdmin):
+    pass

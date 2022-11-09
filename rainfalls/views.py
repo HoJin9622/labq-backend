@@ -1,8 +1,9 @@
 import requests
+from datetime import datetime
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
-from django.conf import settings
 
 
 ROOT_URL = "http://openapi.seoul.go.kr:8088/"
@@ -40,20 +41,24 @@ def get_sewers(location, start_date, end_date):
         f"{ROOT_URL}{API_KEY}/json/{SERVICE_SEWER}/{START_PAGE}/{END_PAGE}/{location}/{start_date}/{end_date}"
     )
     data = response.json().get("DrainpipeMonitoringInfo")
-    return data.get("row")
+    sewers = data.get("row")
+    return sewers
 
 
 def get_rainfalls(location):
     response = requests.get(
-        f"{ROOT_URL}{API_KEY}/json/{SERVICE_RAINFALL}/1/20/{location}"
+        f"{ROOT_URL}{API_KEY}/json/{SERVICE_RAINFALL}/1/1000/{location}"
     )
     data = response.json().get("ListRainfallService")
     return data.get("row")
 
 
 def filter_date(rainfall, start_date, end_date):
-    return rainfall["RAINGAUGE_NAME"] == "영등포구청"
-    # return start_date < rainfall["RECEIVE_TIME"] < end_date
+    start_date = datetime.strptime(start_date, "%Y%m%d%H")
+    end_date = datetime.strptime(end_date, "%Y%m%d%H")
+    receive_time = datetime.strptime(rainfall["RECEIVE_TIME"], "%Y-%m-%d %H:%M")
+
+    return receive_time > start_date and receive_time < end_date
 
 
 class Rainfalls(APIView):
