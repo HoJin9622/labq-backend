@@ -6,7 +6,7 @@ from .utils.api import RainfallController
 from sewers.utils.api import SewerController
 
 
-LOCATION_CODE = {
+LOCATION = {
     "01": "종로구",
     "02": "중구",
     "03": "용산구",
@@ -29,55 +29,59 @@ LOCATION_CODE = {
 }
 
 
-def filter_date(rainfall, start_date, end_date):
-    start_date = datetime.strptime(start_date, "%Y%m%d%H")
-    end_date = datetime.strptime(end_date, "%Y%m%d%H")
-    receive_time = datetime.strptime(rainfall["RECEIVE_TIME"], "%Y-%m-%d %H:%M")
-
-    return receive_time > start_date and receive_time < end_date
-
-
 class Rainfalls(APIView):
     def get(self, request):
         """
         강우량 및 하수관 수위 정보 API
         GET api/v1/rainfalls/?location_code=01&start_date=2022100614&end_date=2022100615
         RESPONSE {
-            location: "종로구",
-            receive_time: "2022-11-04 03:29",
-            rainfall10: "0",
             sewers: [
                 {
-                    "remark": "종로구 세종대로178 뒤 맨홀(KT광화문사옥뒤 자전거보관소앞 종로1길, 미대사관~종로소방서 남측, 중학천 하스박스)",
-                    "mea_wal": 0.14
-                },
-                {
-                    "remark": "종로구 세종대로178 뒤 맨홀(KT광화문사옥뒤 자전거보관소앞 종로1길, 미대사관~종로소방서 남측, 중학천 하스박스)",
-                    "mea_wal": 0.14
+                    "IDN": "19-0012",
+                    "GUBN": "19",
+                    "GUBN_NAM": "영등포",
+                    "MEA_YMD": "2022-11-06 14:00:00.0",
+                    "MEA_WAL": 0.16,
+                    "SIG_STA": "통신양호",
+                    "REMARK": "서울특별시 영등포구 여의대방로 145"
                 }
+            ],
+            rainfalls: [
+                {
+                    "RAINGAUGE_CODE": 1901.0,
+                    "RAINGAUGE_NAME": "영등포구청",
+                    "GU_CODE": 119.0,
+                    "GU_NAME": "영등포구",
+                    "RAINFALL10": "0",
+                    "RECEIVE_TIME": "2022-11-06 14:09"
+                },
             ]
         }
         """
-        location = request.query_params.get("location_code")
+        location_code = request.query_params.get("location_code")
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
 
-        if location not in LOCATION_CODE:
+        try:
+            start_datetime = datetime.strptime(start_date, "%Y%m%d%H")
+            end_datetime = datetime.strptime(end_date, "%Y%m%d%H")
+        except ValueError:
+            raise ParseError("start_date와 end_date 형식을 지켜주세요.(YYYYMMDDHH)")
+
+        if location_code not in LOCATION:
             raise ParseError("location_code는 01~19 사이의 숫자를 입력해주세요.")
 
         rainfall_controller = RainfallController()
         sewer_controller = SewerController()
 
-        sewers = sewer_controller.call(location, start_date, end_date)
-        rainfalls = rainfall_controller.call(LOCATION_CODE[location])
-
-        filtered_rainfalls = [
-            rainfall
-            for rainfall in rainfalls
-            if filter_date(rainfall, start_date, end_date)
-        ]
+        sewers = sewer_controller.call(location_code, start_date, end_date)
+        rainfalls = rainfall_controller.call(
+            LOCATION[location_code],
+            start_datetime,
+            end_datetime,
+        )
 
         result = {}
         result["sewers"] = sewers
-        result["rainfalls"] = filtered_rainfalls
+        result["rainfalls"] = rainfalls
         return Response(result)
