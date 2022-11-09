@@ -1,15 +1,10 @@
-import requests
 from datetime import datetime
-from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
+from .utils.api import RainfallController
+from sewers.utils.api import SewerController
 
-
-ROOT_URL = "http://openapi.seoul.go.kr:8088/"
-API_KEY = settings.API_KEY
-SERVICE_SEWER = "DrainpipeMonitoringInfo"
-SERVICE_RAINFALL = "ListRainfallService"
 
 LOCATION_CODE = {
     "01": "종로구",
@@ -32,25 +27,6 @@ LOCATION_CODE = {
     "18": "금천구",
     "19": "영등포구",
 }
-
-
-def get_sewers(location, start_date, end_date):
-    START_PAGE = 1
-    END_PAGE = 20
-    response = requests.get(
-        f"{ROOT_URL}{API_KEY}/json/{SERVICE_SEWER}/{START_PAGE}/{END_PAGE}/{location}/{start_date}/{end_date}"
-    )
-    data = response.json().get("DrainpipeMonitoringInfo")
-    sewers = data.get("row")
-    return sewers
-
-
-def get_rainfalls(location):
-    response = requests.get(
-        f"{ROOT_URL}{API_KEY}/json/{SERVICE_RAINFALL}/1/1000/{location}"
-    )
-    data = response.json().get("ListRainfallService")
-    return data.get("row")
 
 
 def filter_date(rainfall, start_date, end_date):
@@ -89,8 +65,11 @@ class Rainfalls(APIView):
         if location not in LOCATION_CODE:
             raise ParseError("location_code는 01~19 사이의 숫자를 입력해주세요.")
 
-        sewers = get_sewers(location, start_date, end_date)
-        rainfalls = get_rainfalls(LOCATION_CODE[location])
+        rainfall_controller = RainfallController()
+        sewer_controller = SewerController()
+
+        sewers = sewer_controller.call(location, start_date, end_date)
+        rainfalls = rainfall_controller.call(LOCATION_CODE[location])
 
         filtered_rainfalls = [
             rainfall
