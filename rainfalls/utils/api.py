@@ -26,21 +26,21 @@ class RainfallController:
             for rainfall in rainfalls
             if self.filter_date(rainfall, start_datetime, end_datetime)
         ]
-        # total_count = data["list_total_count"]
-        # total_page = math.ceil(total_count / self.END_PAGE)
-        # if len(filtered_rainfalls) == 0:
-        #     for i in range(1, total_page):
-        #         print("start", self.START_PAGE + i * self.END_PAGE)
-        #         print("end", self.END_PAGE + i * self.END_PAGE)
-        #         response = requests.get(
-        #             f"{self.ROOT_URL}{settings.API_KEY}/json/{self.SERVICE_RAINFALL}/{self.START_PAGE + i * self.END_PAGE}/{self.END_PAGE + i * self.END_PAGE}/{location}"
-        #         )
-        #         data = response.json().get("ListRainfallService")
-        #         rainfalls = data.get("row")
-        #         list = [
-        #             rainfall
-        #             for rainfall in rainfalls
-        #             if self.filter_date(rainfall, start_datetime, end_datetime)
-        #         ]
-        #         filtered_rainfalls = filtered_rainfalls + list
+        total_count = data["list_total_count"]
+        total_page = math.ceil(total_count / self.END_PAGE)
+        if len(filtered_rainfalls) == 0:
+            for i in range(1, total_page):
+                print("start", self.START_PAGE + i * self.END_PAGE)
+                print("end", self.END_PAGE + i * self.END_PAGE)
+                response = requests.get(
+                    f"{self.ROOT_URL}{settings.API_KEY}/json/{self.SERVICE_RAINFALL}/{self.START_PAGE + i * self.END_PAGE}/{self.END_PAGE + i * self.END_PAGE}/{location}"
+                )
+                data = response.json().get("ListRainfallService")
+                rainfalls = data.get("row")
+                list = [
+                    rainfall
+                    for rainfall in rainfalls
+                    if self.filter_date(rainfall, start_datetime, end_datetime)
+                ]
+                filtered_rainfalls = filtered_rainfalls + list
         return filtered_rainfalls
