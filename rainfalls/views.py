@@ -53,9 +53,13 @@ class Rainfalls(APIView):
             start_datetime,
             end_datetime,
         )
-        sewer_controller = SewerController()
+        sewer_controller = SewerController(
+            location_code,
+            start_date,
+            end_date,
+        )
 
-        sewers = sewer_controller.call(location_code, start_date, end_date)
+        sewers = sewer_controller.call()
         rainfalls = rainfall_controller.call()
 
         result = {}
