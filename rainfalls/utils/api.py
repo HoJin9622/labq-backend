@@ -32,23 +32,21 @@ class RainfallController:
     START_PAGE = 1
     PAGE_COUNT = 1000
 
-    def __init__(self, location_code):
+    def __init__(self, location_code, start_date, end_date):
         self.location = LOCATION[location_code]
+        self.start_date = start_date
+        self.end_date = end_date
 
-    def filter_date(self, rainfall, start_date, end_date):
+    def filter_date(self, rainfall):
         """
         강우량 정보에 start_date와 end_date 사이에 해당되는 정보를 제거 후 반환합니다.
         """
         receive_time = datetime.strptime(rainfall["RECEIVE_TIME"], "%Y-%m-%d %H:%M")
 
-        return receive_time > start_date and receive_time < end_date
+        return receive_time > self.start_date and receive_time < self.end_date
 
-    def filter_rainfalls(self, rainfalls, start_datetime, end_datetime):
-        return [
-            rainfall
-            for rainfall in rainfalls
-            if self.filter_date(rainfall, start_datetime, end_datetime)
-        ]
+    def filter_rainfalls(self, rainfalls):
+        return [rainfall for rainfall in rainfalls if self.filter_date(rainfall)]
 
     def get_rainfalls(self, start_page, end_page):
         """
@@ -61,7 +59,7 @@ class RainfallController:
         rainfalls = data.get("row")
         return rainfalls, data["list_total_count"]
 
-    def call(self, start_datetime, end_datetime):
+    def call(self):
         """
         start_datetime과 end_datetime 사이의 강우량 정보를 불러옵니다.
         존재하지 않는다면 빈 배열을 반환합니다.
@@ -69,9 +67,7 @@ class RainfallController:
         rainfalls, list_total_count = self.get_rainfalls(
             self.START_PAGE, self.PAGE_COUNT
         )
-        filtered_rainfalls = self.filter_rainfalls(
-            rainfalls, start_datetime, end_datetime
-        )
+        filtered_rainfalls = self.filter_rainfalls(rainfalls)
         total_page = math.ceil(list_total_count / self.PAGE_COUNT)
         if len(filtered_rainfalls) == 0:
             for page in range(1, total_page):
@@ -79,6 +75,6 @@ class RainfallController:
                     self.START_PAGE + page * self.PAGE_COUNT,
                     self.PAGE_COUNT + page * self.PAGE_COUNT,
                 )
-                list = self.filter_rainfalls(rainfalls, start_datetime, end_datetime)
+                list = self.filter_rainfalls(rainfalls)
                 filtered_rainfalls = filtered_rainfalls + list
         return filtered_rainfalls

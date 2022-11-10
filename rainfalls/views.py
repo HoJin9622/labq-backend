@@ -48,11 +48,15 @@ class Rainfalls(APIView):
         if location_code not in LOCATION:
             raise ParseError("location_code는 01~19 사이의 숫자를 입력해주세요.")
 
-        rainfall_controller = RainfallController(location_code)
+        rainfall_controller = RainfallController(
+            location_code,
+            start_datetime,
+            end_datetime,
+        )
         sewer_controller = SewerController()
 
         sewers = sewer_controller.call(location_code, start_date, end_date)
-        rainfalls = rainfall_controller.call(start_datetime, end_datetime)
+        rainfalls = rainfall_controller.call()
 
         result = {}
         result["sewers"] = sewers
