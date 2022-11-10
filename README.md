@@ -11,6 +11,8 @@
   - [:mag_right: Development(Poetry)](#mag_right-developmentpoetry)
   - [:pencil2: Commit Message Convention](#pencil2-commit-message-convention)
   - [:chart_with_upwards_trend: Git Flow / Branch Information](#chart_with_upwards_trend-git-flow--branch-information)
+  - [:closed_book: API Docs](#closed_book-api-docs)
+    - [하수관 수위/강우량 정보](#하수관-수위강우량-정보)
 
 ## :notebook_with_decorative_cover: 프로젝트 요구사항
 
@@ -64,3 +66,46 @@ python manage.py runserver
 - release: 새로운 제품 출시 준비를 지원합니다.
 - hotfix: 핫픽스는 현재 출시된 제품에 문제가 생겨서 즉각 대응해야하는 상황에서 필요합니다.
 ```
+
+## :closed_book: API Docs
+
+### 하수관 수위/강우량 정보
+
+| Method | URL               | Description                         |
+| ------ | ----------------- | ----------------------------------- |
+| GET    | api/v1/rainfalls/ | 하수관 수위/강우량 정보를 확인한다. |
+
+**Query Parameter**
+
+- location_code: 지역코드(01~19)
+- start_date: 시작일자(YYYYMMDDHH 형식)
+- end_date: 종료일자(YYYYMMDDHH 형식)
+
+**Result**
+
+- Response Example
+  ```json
+  {
+    "sewers": [
+      {
+        "IDN": "19-0012",
+        "GUBN": "19",
+        "GUBN_NAM": "영등포",
+        "MEA_YMD": "2022-11-06 14:00:00.0",
+        "MEA_WAL": 0.16,
+        "SIG_STA": "통신양호",
+        "REMARK": "서울특별시 영등포구 여의대방로 145"
+      }
+    ],
+    "rainfalls": [
+      {
+        "RAINGAUGE_CODE": 1902.0,
+        "RAINGAUGE_NAME": "도림2동P",
+        "GU_CODE": 119.0,
+        "GU_NAME": "영등포구",
+        "RAINFALL10": "0",
+        "RECEIVE_TIME": "2022-11-07 14:59"
+      }
+    ]
+  }
+  ```
